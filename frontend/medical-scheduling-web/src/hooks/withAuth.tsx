@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/contexts/AuthContext'
+import Layout from '@/components/Layout'
 
 export const withAuth = (Component: React.FC, requiredRole?: string) => {
-    return function ProtectedRoute(props: any) {
+    return function ProtectedRoute(props: Record<string, unknown>) {
         const router = useRouter()
         const { user, loading } = useAuth()
 
@@ -29,6 +30,10 @@ export const withAuth = (Component: React.FC, requiredRole?: string) => {
             return null
         }
 
-        return <Component {...props} />
+        return (
+            <Layout>
+                <Component {...props} />
+            </Layout>
+        )
     }
 }

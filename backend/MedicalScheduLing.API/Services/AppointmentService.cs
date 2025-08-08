@@ -51,19 +51,42 @@ namespace MedicalScheduling.API.Services
 
         public async Task<List<AppointmentDto>> GetPatientAppointmentsAsync(int patientId)
         {
-            return await _context.Appointments
+            // Get all appointments
+            var allAppointments = await _context.Appointments.ToListAsync();
+            
+            // Filter and sort in memory
+            var appointments = allAppointments
                 .Where(a => a.PatientId == patientId)
-                .Include(a => a.Doctor)
                 .OrderBy(a => a.AppointmentDate)
-                .Select(a => new AppointmentDto
+                .ToList();
+            
+            // Get patient information
+            var patient = await _context.Users.FindAsync(patientId);
+            
+            // Create DTOs
+            var result = new List<AppointmentDto>();
+            
+            foreach (var appointment in appointments)
+            {
+                var doctorName = "";
+                if (appointment.DoctorId.HasValue)
                 {
-                    Id = a.Id,
-                    AppointmentDate = a.AppointmentDate,
-                    Symptoms = a.Symptoms,
-                    RecommendedSpecialty = a.RecommendedSpecialty,
-                    DoctorName = a.Doctor != null ? a.Doctor.Name : null
-                })
-                .ToListAsync();
+                    var doctor = await _context.Users.FindAsync(appointment.DoctorId.Value);
+                    doctorName = doctor?.Name;
+                }
+                
+                result.Add(new AppointmentDto
+                {
+                    Id = appointment.Id,
+                    AppointmentDate = appointment.AppointmentDate,
+                    Symptoms = appointment.Symptoms,
+                    RecommendedSpecialty = appointment.RecommendedSpecialty,
+                    PatientName = patient?.Name,
+                    DoctorName = doctorName
+                });
+            }
+            
+            return result;
         }
 
         public async Task<List<AppointmentDto>> GetDoctorAppointmentsByDateAsync(int doctorId, DateTime date)

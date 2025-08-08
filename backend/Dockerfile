@@ -5,10 +5,10 @@ ENV ASPNETCORE_URLS=http://+:5000
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["MedicalScheduling.API/MedicalScheduling.API.csproj", "MedicalScheduling.API/"]
-RUN dotnet restore "MedicalScheduling.API/MedicalScheduling.API.csproj"
+COPY ["MedicalScheduLing.API/MedicalScheduling.API.csproj", "MedicalScheduLing.API/"]
+RUN dotnet restore "MedicalScheduLing.API/MedicalScheduling.API.csproj"
 COPY . .
-WORKDIR "/src/MedicalScheduling.API"
+WORKDIR "/src/MedicalScheduLing.API"
 RUN dotnet build "MedicalScheduling.API.csproj" -c Release -o /app/build
 
 FROM build AS publish

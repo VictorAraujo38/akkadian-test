@@ -32,8 +32,9 @@ export default function Cadastro() {
       })
       toast.success('Cadastro realizado com sucesso!')
       router.push('/')
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao cadastrar')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao cadastrar'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

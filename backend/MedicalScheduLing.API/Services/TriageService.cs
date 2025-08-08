@@ -1,3 +1,5 @@
+using MedicalScheduling.API.DTOs;
+
 namespace MedicalScheduling.API.Services
 {
     public class TriageService : ITriageService

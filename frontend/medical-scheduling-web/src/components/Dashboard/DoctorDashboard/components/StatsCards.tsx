@@ -5,6 +5,7 @@ import {
     CheckCircleIcon,
     ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
+import { format } from 'date-fns'
 
 interface StatsCardsProps {
     appointments: any[]

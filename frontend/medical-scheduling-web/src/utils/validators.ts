@@ -54,7 +54,7 @@ export const validators = {
     return true;
   },
 
-  required: (value: any) => {
+  required: (value: unknown) => {
     return !!value || "Campo obrigatório";
   },
 

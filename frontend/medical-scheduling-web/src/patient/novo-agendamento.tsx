@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
-import { useAuth } from '@/contexts/AuthContext'
-import Layout from '@/components/Layout'
+
 import { api } from '@/services/api'
 import { toast } from 'react-toastify'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { withAuth } from '@/hooks/withAuth'
 
 type AppointmentForm = {
   appointmentDate: string
@@ -13,9 +13,8 @@ type AppointmentForm = {
   symptoms: string
 }
 
-export default function NovoAgendamento() {
+function NovoAgendamento() {
   const router = useRouter()
-  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const { register, handleSubmit, formState: { errors } } = useForm<AppointmentForm>()
 
@@ -31,8 +30,12 @@ export default function NovoAgendamento() {
       
       toast.success('Agendamento criado com sucesso!')
       router.push('/paciente/dashboard')
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Erro ao criar agendamento')
+    } catch (error: unknown) {
+      let errorMessage = 'Erro ao criar agendamento'
+      if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -44,7 +47,6 @@ export default function NovoAgendamento() {
   const minDate = tomorrow.toISOString().split('T')[0]
 
   return (
-    <Layout>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <button
@@ -126,4 +128,17 @@ export default function NovoAgendamento() {
 
             <div className="flex justify-end space-x-3">
               <button
-                type
+                type="submit"
+                disabled={loading}
+                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                {loading ? 'Agendando...' : 'Agendar consulta'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )
+}
+
+export default withAuth(NovoAgendamento, 'Patient')

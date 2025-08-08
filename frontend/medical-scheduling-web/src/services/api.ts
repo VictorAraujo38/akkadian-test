@@ -1,37 +1,61 @@
-import { useEffect } from "react";
-import { useRouter } from "next/router";
-import { useAuth } from "@/contexts/AuthContext";
-import Head from "next/head";
-import { LoadingSpinner } from "@/components/Common/LoadingSpinner";
+import axios from 'axios'
+import Cookies from 'js-cookie'
 
-export default function Home() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
+const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push("/login");
-      } else if (user.role === "Patient") {
-        router.push("/paciente/dashboard");
-      } else if (user.role === "Doctor") {
-        router.push("/medico/dashboard");
+export const api = axios.create({
+  baseURL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
+// Interceptor para adicionar o token em todas as requisições
+api.interceptors.request.use(
+  (config) => {
+    const token = Cookies.get('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// Interceptor para tratamento de erros
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Se o erro for 401 (Unauthorized), redireciona para o login
+    if (error.response && error.response.status === 401) {
+      Cookies.remove('token')
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
       }
     }
-  }, [user, loading, router]);
+    return Promise.reject(error)
+  }
+)
 
-  return (
-    <>
-      <Head>
-        <title>Medical Scheduling - Sistema de Agendamento Médico</title>
-        <meta
-          name="description"
-          content="Sistema completo para agendamento médico com triagem por IA"
-        />
-      </Head>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <LoadingSpinner size="large" />
-      </div>
-    </>
-  );
+export const appointmentService = {
+  getTriageRecommendation: async (symptoms: string) => {
+    const response = await api.post('/triagem', { symptoms })
+    return response.data
+  },
+  
+  createAppointment: async (data: Record<string, unknown>) => {
+    const response = await api.post('/paciente/agendamentos', data)
+    return response.data
+  },
+  
+  getPatientAppointments: async () => {
+    const response = await api.get('/paciente/agendamentos')
+    return response.data
+  },
+  
+  getDoctorAppointments: async (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0]
+    const response = await api.get(`/medico/agendamentos?data=${dateStr}`)
+    return response.data
+  }
 }

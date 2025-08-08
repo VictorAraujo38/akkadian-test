@@ -6,6 +6,8 @@ using MedicalScheduling.API.Data;
 using MedicalScheduling.API.DTOs;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using System;
+using System.Threading.Tasks;
 
 namespace MedicalScheduling.API.Tests
 {
@@ -44,55 +46,7 @@ namespace MedicalScheduling.API.Tests
             var registerDto = new RegisterDto
             {
                 Email = "test@example.com",
-                Password = "hashed",
-                CreatedAt = DateTime.UtcNow
-            };
-            
-            var doctor = new User
-            {
-                Id = 2,
-                Email = "doctor@test.com",
-                Name = "Test Doctor",
-                Role = UserRole.Doctor,
-                Password = "hashed",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            context.Users.AddRange(patient, doctor);
-
-            var appointment1 = new Appointment
-            {
-                PatientId = 1,
-                DoctorId = 2,
-                AppointmentDate = DateTime.Now.AddDays(1),
-                Symptoms = "Sintoma 1",
-                RecommendedSpecialty = "Cardiologia",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            var appointment2 = new Appointment
-            {
-                PatientId = 1,
-                AppointmentDate = DateTime.Now.AddDays(2),
-                Symptoms = "Sintoma 2",
-                RecommendedSpecialty = "Neurologia",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            context.Appointments.AddRange(appointment1, appointment2);
-            await context.SaveChangesAsync();
-
-            // Act
-            var result = await service.GetPatientAppointmentsAsync(1);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(2, result.Count);
-            Assert.Contains(result, a => a.RecommendedSpecialty == "Cardiologia");
-            Assert.Contains(result, a => a.DoctorName == "Test Doctor");
-        }
-    }
-}password123",
+                Password = "password123",
                 Name = "Test User",
                 Role = "patient"
             };

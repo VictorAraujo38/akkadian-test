@@ -1,6 +1,6 @@
 import React from 'react'
 import styles from './PatientDashboard.module.css'
-import { DashboardHeader } from './components/DashboardHeader'
+import { DashboardHeader } from './DashboardHeader'
 import { AppointmentsList } from './components/AppointmentsList'
 import { StatsCards } from './components/StatsCards'
 import { usePatientDashboard } from './hooks/usePatientDashboard'

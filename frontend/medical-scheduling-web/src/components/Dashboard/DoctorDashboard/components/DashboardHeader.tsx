@@ -1,6 +1,8 @@
 import React from 'react'
 import { CalendarDaysIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline'
 import styles from '../DoctorDashboard.module.css'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 interface DashboardHeaderProps {
     user: any

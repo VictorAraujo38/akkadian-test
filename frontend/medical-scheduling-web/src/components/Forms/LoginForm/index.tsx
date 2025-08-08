@@ -29,11 +29,12 @@ export const LoginForm: React.FC = () => {
     const onSubmit = async (data: LoginFormData) => {
         setLoading(true)
         try {
-            await login(data.email, data.password, data.rememberMe)
+            await login(data.email, data.password)
             toast.success('Login realizado com sucesso!')
             router.push('/')
-        } catch (error: any) {
-            toast.error(error.message || 'Erro ao fazer login')
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login'
+            toast.error(errorMessage)
         } finally {
             setLoading(false)
         }

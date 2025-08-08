@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/contexts/AuthContext'
-import Layout from '@/components/Layout'
 import { api } from '@/services/api'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -42,32 +41,30 @@ export const DoctorDashboard: React.FC = () => {
     }
 
     return (
-        <Layout>
-            <div className={styles.container}>
-                <DashboardHeader user={user} />
-                <StatsCards appointments={appointments} />
+        <div className={styles.container}>
+            <DashboardHeader user={user} />
+            <StatsCards appointments={appointments} />
 
-                <div className={styles.mainContent}>
-                    <div className={styles.calendarSection}>
-                        <AppointmentCalendar
-                            appointments={appointments}
-                            selectedDate={selectedDate}
-                            onDateChange={setSelectedDate}
-                            viewMode={viewMode}
-                            onViewModeChange={setViewMode}
-                            loading={loading}
-                        />
-                    </div>
+            <div className={styles.mainContent}>
+                <div className={styles.calendarSection}>
+                    <AppointmentCalendar
+                        appointments={appointments}
+                        selectedDate={selectedDate}
+                        onDateChange={setSelectedDate}
+                        viewMode={viewMode}
+                        onViewModeChange={setViewMode}
+                        loading={loading}
+                    />
+                </div>
 
-                    <div className={styles.sidePanel}>
-                        <PatientList
-                            appointments={appointments}
-                            selectedDate={selectedDate}
-                            loading={loading}
-                        />
-                    </div>
+                <div className={styles.sidePanel}>
+                    <PatientList
+                        appointments={appointments}
+                        selectedDate={selectedDate}
+                        loading={loading}
+                    />
                 </div>
             </div>
-        </Layout>
+        </div>
     )
 }

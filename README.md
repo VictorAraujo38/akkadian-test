@@ -27,14 +27,13 @@ Sistema completo para agendamento médico com triagem automática de sintomas vi
 ## 📋 Pré-requisitos
 
 ### Opção 1: Com Docker (Recomendado)
-- Docker Desktop instalado
-- Docker Compose
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado (inclui Docker Compose)
 
 ### Opção 2: Sem Docker
-- Node.js 18+
-- .NET SDK 8+
-- PostgreSQL 15+
-- Visual Studio Code ou Visual Studio 2022
+- [Node.js 18+](https://nodejs.org/)
+- [.NET SDK 8+](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [PostgreSQL 15+](https://www.postgresql.org/download/)
+- [Visual Studio Code](https://code.visualstudio.com/) ou [Visual Studio 2022](https://visualstudio.microsoft.com/)
 
 ## 🛠️ Instalação e Execução
 
@@ -62,14 +61,27 @@ docker-compose up --build
 - Backend API: http://localhost:5000
 - Swagger: http://localhost:5000/swagger
 
+5. **Credenciais padrão para teste**
+
+**Médico:**
+- Email: medico@example.com
+- Senha: Senha@123
+
+**Paciente:**
+- Email: paciente@example.com
+- Senha: Senha@123
+
 ### 💻 Executando Localmente (Sem Docker)
 
 #### Backend
 
-1. **Configure o PostgreSQL**
+1. **Instale e configure o PostgreSQL**
+- Instale o PostgreSQL seguindo as instruções em [postgresql.org](https://www.postgresql.org/download/)
+- Crie um banco de dados para o projeto:
 ```sql
 CREATE DATABASE medical_scheduling;
 ```
+- Anote o nome de usuário e senha do PostgreSQL para configurar a connection string
 
 2. **Navegue até a pasta do backend**
 ```bash
@@ -86,18 +98,24 @@ Edite `appsettings.json`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=medical_scheduling;Username=seu_usuario;Password=sua_senha"
+    "DefaultConnection": "Host=localhost;Database=medical_scheduling;Username=postgres;Password=postgres"
   }
 }
 ```
+**Nota:** Substitua `postgres` pelo seu nome de usuário e senha do PostgreSQL, caso sejam diferentes.
 
-5. **Execute as migrations**
+5. **Instale a ferramenta do Entity Framework Core CLI**
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+6. **Execute as migrations**
 ```bash
 dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
-6. **Execute o backend**
+7. **Execute o backend**
 ```bash
 dotnet run
 ```
@@ -115,8 +133,9 @@ npm install
 ```
 
 3. **Configure o arquivo .env.local**
-```env
-NEXT_PUBLIC_API_URL=http://localhost:5000
+```bash
+cp .env.local.example .env.local
+# Edite o arquivo .env.local se necessário
 ```
 
 4. **Execute o frontend**
@@ -135,9 +154,9 @@ Usa um sistema de palavras-chave local para simular a IA.
 Para usar a API real da OpenAI:
 
 1. Obtenha uma API Key em https://platform.openai.com/
-2. Configure no arquivo `.env`:
+2. Configure no arquivo `.env` na raiz do projeto (copie de `.env.example` se ainda não existir):
 ```env
-OPENAI_API_KEY=sk-sua-chave-aqui
+OPENAI_API_KEY=sua-chave-aqui
 ```
 
 ## 📱 Funcionalidades
@@ -171,8 +190,9 @@ dotnet test
 ### Frontend
 ```bash
 cd frontend/medical-scheduling-web
-npm run test
-```
+npm run test  # Executa testes em modo watch
+# ou
+npm run test:ci  # Executa testes uma única vez (CI)
 
 ## 📝 Endpoints da API
 

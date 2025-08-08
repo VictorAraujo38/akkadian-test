@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: medical_scheduling_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: medical_scheduling
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - medical_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medical_scheduling_api
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=medical_scheduling;Username=postgres;Password=postgres
+      - ASPNETCORE_ENVIRONMENT=Development
+      - JwtSettings__SecretKey=your-secret-key-here-minimum-32-characters-long!!
+      - JwtSettings__Issuer=MedicalSchedulingAPI
+      - JwtSettings__Audience=MedicalSchedulingClient
+      - OpenAI__ApiKey=${OPENAI_API_KEY}
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - medical_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: medical_scheduling_web
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - medical_net
+
+volumes:
+  postgres_data:
+
+networks:
+  medical_net:
+    driver: bridge

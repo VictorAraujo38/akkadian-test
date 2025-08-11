@@ -5,6 +5,7 @@ using MedicalScheduling.API.Services;
 using MedicalScheduling.API.Data;
 using MedicalScheduling.API.DTOs;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
@@ -41,12 +42,13 @@ namespace MedicalScheduling.API.Tests
             // Arrange
             using var context = GetInMemoryContext();
             var configuration = GetConfiguration();
-            var service = new AuthService(context, configuration);
+            var mockLogger = new Mock<ILogger<AuthService>>();
+            var service = new AuthService(context, configuration, mockLogger.Object);
             
             var registerDto = new RegisterDto
             {
                 Email = "test@example.com",
-                Password = "password123",
+                Password = "Password@123",
                 Name = "Test User",
                 Role = "patient"
             };
@@ -70,12 +72,13 @@ namespace MedicalScheduling.API.Tests
             // Arrange
             using var context = GetInMemoryContext();
             var configuration = GetConfiguration();
-            var service = new AuthService(context, configuration);
+            var mockLogger = new Mock<ILogger<AuthService>>();
+            var service = new AuthService(context, configuration, mockLogger.Object);
             
             var registerDto = new RegisterDto
             {
                 Email = "existing@example.com",
-                Password = "password123",
+                Password = "Password@123",
                 Name = "Test User",
                 Role = "patient"
             };
@@ -84,7 +87,7 @@ namespace MedicalScheduling.API.Tests
             await service.RegisterAsync(registerDto);
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
                 await service.RegisterAsync(registerDto));
         }
 
@@ -94,12 +97,13 @@ namespace MedicalScheduling.API.Tests
             // Arrange
             using var context = GetInMemoryContext();
             var configuration = GetConfiguration();
-            var service = new AuthService(context, configuration);
+            var mockLogger = new Mock<ILogger<AuthService>>();
+            var service = new AuthService(context, configuration, mockLogger.Object);
             
             var registerDto = new RegisterDto
             {
                 Email = "login@example.com",
-                Password = "password123",
+                Password = "Password@123",
                 Name = "Login User",
                 Role = "doctor"
             };
@@ -109,7 +113,7 @@ namespace MedicalScheduling.API.Tests
             var loginDto = new LoginDto
             {
                 Email = "login@example.com",
-                Password = "password123"
+                Password = "Password@123"
             };
 
             // Act
@@ -128,16 +132,17 @@ namespace MedicalScheduling.API.Tests
             // Arrange
             using var context = GetInMemoryContext();
             var configuration = GetConfiguration();
-            var service = new AuthService(context, configuration);
+            var mockLogger = new Mock<ILogger<AuthService>>();
+            var service = new AuthService(context, configuration, mockLogger.Object);
             
             var loginDto = new LoginDto
             {
                 Email = "nonexistent@example.com",
-                Password = "wrongpassword"
+                Password = "WrongPassword@123"
             };
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () => 
                 await service.LoginAsync(loginDto));
         }
 

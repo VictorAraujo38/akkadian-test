@@ -5,7 +5,7 @@ using System.Text;
 using MedicalScheduling.API.Data;
 using MedicalScheduling.API.Services;
 using MedicalScheduling.API.Models;
-using System.Security.Cryptography;
+using BCrypt.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +31,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is required")))
         };
     });
 
@@ -102,9 +102,7 @@ app.MapControllers();
 
 static string HashPassword(string password)
 {
-    using var sha256 = SHA256.Create();
-    var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-    return Convert.ToBase64String(hashedBytes);
+    return BCrypt.Net.BCrypt.HashPassword(password, 12);
 }
 
 // Database initialization and seeding
@@ -439,3 +437,5 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+public partial class Program { }

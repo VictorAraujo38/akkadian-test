@@ -25,6 +25,10 @@ namespace MedicalScheduling.API.Services
             { "dor de garganta", "Otorrinolaringologia" }
         };
 
+        public MockAIService()
+        {
+        }
+
         public Task<TriageResponseDto> GetSpecialtyRecommendationAsync(string symptoms)
         {
             var symptomsLower = symptoms.ToLower();

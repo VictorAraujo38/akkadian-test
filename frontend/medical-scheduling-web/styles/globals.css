@@ -368,3 +368,211 @@ textarea:focus {
   border-color: #3b82f6 !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
 }
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+.mainContent {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    grid-template-columns: 1fr;
+  }
+}
+
+.calendarSection {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.sidePanel {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+/* Fix para cards de estatísticas */
+.statsCard {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  margin-bottom: 1rem !important;
+}
+
+.statsCard h3 {
+  color: #111827 !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.statsCard p {
+  color: #6b7280 !important;
+  font-size: 0.875rem !important;
+}
+
+/* Fix para calendário */
+.calendar {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem !important;
+}
+
+.calendarHeader {
+  background: #f9fafb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 1rem !important;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+.calendarDay {
+  border: 1px solid #e5e7eb !important;
+  background: white !important;
+  color: #111827 !important;
+  padding: 0.75rem !important;
+  transition: all 0.2s !important;
+}
+
+.calendarDay:hover {
+  background: #f3f4f6 !important;
+  border-color: #3b82f6 !important;
+}
+
+.calendarDaySelected {
+  background: #3b82f6 !important;
+  color: white !important;
+  border-color: #3b82f6 !important;
+}
+
+.calendarDayToday {
+  background: #fef3c7 !important;
+  border-color: #f59e0b !important;
+  color: #92400e !important;
+  font-weight: 600 !important;
+}
+
+/* Fix para lista de pacientes */
+.patientList {
+  background: white !important;
+}
+
+.patientItem {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem !important;
+  margin-bottom: 0.75rem !important;
+  transition: all 0.2s !important;
+}
+
+.patientItem:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  border-color: #3b82f6 !important;
+}
+
+.patientName {
+  color: #111827 !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.patientTime {
+  color: #6b7280 !important;
+  font-size: 0.875rem !important;
+}
+
+.patientSymptoms {
+  color: #374151 !important;
+  font-size: 0.875rem !important;
+  margin-top: 0.5rem !important;
+}
+
+/* Fix para botões */
+.button {
+  background: #3b82f6 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
+.button:hover {
+  background: #2563eb !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+.buttonSecondary {
+  background: white !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.buttonSecondary:hover {
+  background: #f9fafb !important;
+  border-color: #9ca3af !important;
+}
+
+/* Fix para textos em geral */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #111827 !important;
+}
+
+p,
+span,
+div {
+  color: #374151 !important;
+}
+
+.textMuted {
+  color: #6b7280 !important;
+}
+
+.textSmall {
+  font-size: 0.875rem !important;
+}
+
+/* Fix para inputs e selects */
+input,
+select,
+textarea {
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 0.5rem !important;
+  padding: 0.75rem !important;
+  color: #111827 !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}

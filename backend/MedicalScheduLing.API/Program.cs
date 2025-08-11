@@ -5,6 +5,7 @@ using System.Text;
 using MedicalScheduling.API.Data;
 using MedicalScheduling.API.Services;
 using MedicalScheduling.API.Models;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,53 +68,68 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Run migrations
-using (var scope = app.Services.CreateScope())
+static string HashPassword(string password)
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    dbContext.Database.Migrate();
+    using var sha256 = SHA256.Create();
+    var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+    return Convert.ToBase64String(hashedBytes);
 }
 
+// Run migrations
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
     try
     {
-        // Aplicar migrations automaticamente
-        dbContext.Database.Migrate();
+        // Criar banco e tabelas automaticamente
+        Console.WriteLine("Criando banco de dados...");
+        dbContext.Database.EnsureCreated();
+        Console.WriteLine("Banco de dados criado com sucesso!");
 
         // Criar usuários padrão se não existirem
         if (!dbContext.Users.Any())
         {
+            Console.WriteLine("Criando usuários padrão...");
+
+            string defaultPassword = HashPassword("Senha@123");
+
             var users = new[]
             {
                 new User
                 {
                     Email = "medico@example.com",
-                    Password = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=", // Senha@123
+                    Password = defaultPassword,
                     Name = "Dr. João Silva",
                     Role = UserRole.Doctor,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    Appointments = new List<Appointment>()
                 },
                 new User
                 {
                     Email = "paciente@example.com",
-                    Password = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=", // Senha@123
+                    Password = defaultPassword,
                     Name = "Maria Santos",
                     Role = UserRole.Patient,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    Appointments = new List<Appointment>()
                 }
             };
 
             dbContext.Users.AddRange(users);
             dbContext.SaveChanges();
+            Console.WriteLine("Usuários padrão criados com sucesso!");
+            Console.WriteLine($"Login: medico@example.com / Senha@123");
+            Console.WriteLine($"Login: paciente@example.com / Senha@123");
+        }
+        else
+        {
+            Console.WriteLine("Usuários já existem no banco.");
         }
     }
     catch (Exception ex)
     {
-        // Log do erro mas não quebra a aplicação
-        Console.WriteLine($"Migration error: {ex.Message}");
+        Console.WriteLine($"Erro durante inicialização do banco: {ex.Message}");
     }
 }
 

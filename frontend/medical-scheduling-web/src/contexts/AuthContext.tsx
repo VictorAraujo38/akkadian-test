@@ -38,18 +38,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (token) {
         api.defaults.headers.Authorization = `Bearer ${token}`
         try {
-
           const userData = JSON.parse(atob(token.split('.')[1]))
+
+
           setUser({
-            id: userData.nameid,
-            name: userData.name,
+            id: parseInt(userData.nameid || userData.sub || userData.id),
+            name: userData.name || userData.unique_name,
             email: userData.email,
             role: userData.role
           })
+
+          
+
         } catch (error) {
           console.error('Error loading user data:', error)
+          console.error('Token inválido:', token) 
           Cookies.remove('token')
           delete api.defaults.headers.Authorization
+          setUser(null)
         }
       }
       setLoading(false)

@@ -576,3 +576,26 @@ textarea:focus {
   border-color: #3b82f6 !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
 }
+
+.calendarDayToday {
+  background: linear-gradient(135deg, #f97316 0%, #dc2626 100%) !important;
+  border-color: #f97316 !important;
+  color: white !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4) !important;
+  border-radius: 50% !important;
+  position: relative !important;
+}
+
+.calendarDayToday::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #f97316, #dc2626);
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0.3;
+}

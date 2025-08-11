@@ -2,22 +2,13 @@ import React from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-interface Patient {
-  id: string
-  name: string
-  email: string
-  phone: string
-}
-
 interface Appointment {
-  id: string
-  patientId: string
-  patient: Patient
-  doctorId: string
-  date: string
-  time: string
-  status: 'scheduled' | 'completed' | 'cancelled'
-  notes?: string
+  id: number
+  appointmentDate: string
+  symptoms: string
+  patientName: string
+  status: string
+  recommendedSpecialty?: string
 }
 
 interface PatientListProps {
@@ -26,14 +17,14 @@ interface PatientListProps {
   loading: boolean
 }
 
-export const PatientList: React.FC<PatientListProps> = ({ 
-  appointments, 
+export const PatientList: React.FC<PatientListProps> = ({
+  appointments,
   selectedDate,
-  loading 
+  loading
 }) => {
   // Filter appointments for the selected date
   const filteredAppointments = appointments.filter(appointment => {
-    const appointmentDate = new Date(appointment.date)
+    const appointmentDate = new Date(appointment.appointmentDate)
     return (
       appointmentDate.getDate() === selectedDate.getDate() &&
       appointmentDate.getMonth() === selectedDate.getMonth() &&
@@ -43,7 +34,7 @@ export const PatientList: React.FC<PatientListProps> = ({
 
   // Sort appointments by time
   const sortedAppointments = [...filteredAppointments].sort((a, b) => {
-    return a.time.localeCompare(b.time)
+    return new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
   })
 
   if (loading) {
@@ -70,25 +61,37 @@ export const PatientList: React.FC<PatientListProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {sortedAppointments.map((appointment) => (
-            <div key={appointment.id} className="border-l-4 border-blue-500 pl-3 py-2">
-              <div className="font-medium">{appointment.patient.name}</div>
-              <div className="text-sm text-gray-500">{appointment.time}</div>
-              <div className="flex mt-2 space-x-2">
-                <span 
-                  className={`px-2 py-1 text-xs rounded-full ${
-                    appointment.status === 'scheduled' ? 'bg-yellow-100 text-yellow-800' :
-                    appointment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    'bg-red-100 text-red-800'
-                  }`}
-                >
-                  {appointment.status === 'scheduled' ? 'Agendado' :
-                   appointment.status === 'completed' ? 'Concluído' :
-                   'Cancelado'}
-                </span>
+          {sortedAppointments.map((appointment) => {
+            const appointmentTime = new Date(appointment.appointmentDate)
+            const timeString = format(appointmentTime, 'HH:mm')
+
+            return (
+              <div key={appointment.id} className="border-l-4 border-blue-500 pl-3 py-3 bg-gray-50 rounded-r-lg">
+                <div className="font-medium text-gray-900">{appointment.patientName}</div>
+                <div className="text-sm text-blue-600 font-medium">{timeString}</div>
+                <div className="text-xs text-gray-600 mt-1">
+                  {appointment.recommendedSpecialty || 'Especialidade não informada'}
+                </div>
+                <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {appointment.symptoms}
+                </div>
+                <div className="flex mt-2">
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${appointment.status === 'Scheduled' || appointment.status === 'Agendado' ? 'bg-yellow-100 text-yellow-800' :
+                        appointment.status === 'Completed' || appointment.status === 'Concluído' ? 'bg-green-100 text-green-800' :
+                          appointment.status === 'Cancelled' || appointment.status === 'Cancelado' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                      }`}
+                  >
+                    {appointment.status === 'Scheduled' ? 'Agendado' :
+                      appointment.status === 'Completed' ? 'Concluído' :
+                        appointment.status === 'Cancelled' ? 'Cancelado' :
+                          appointment.status}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

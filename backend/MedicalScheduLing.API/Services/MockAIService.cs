@@ -90,6 +90,8 @@ namespace MedicalScheduling.API.Services
         {
             try
             {
+                _logger?.LogInformation($"Analisando sintomas: {symptoms}");
+
                 var symptomsLower = symptoms.ToLower();
 
                 // Analisar sintomas com pontuação de confiança
@@ -99,6 +101,8 @@ namespace MedicalScheduling.API.Services
                 {
                     if (symptomsLower.Contains(kvp.Key))
                     {
+                        _logger?.LogInformation($"Match encontrado: {kvp.Key} -> {kvp.Value.specialty}");
+
                         // Calcular score baseado na especificidade do sintoma
                         double score = CalculateSymptomScore(kvp.Key, symptomsLower);
                         matches.Add((kvp.Value.specialty, kvp.Value.reasoning, score));
@@ -109,6 +113,8 @@ namespace MedicalScheduling.API.Services
                 {
                     // Pegar a especialidade com maior score
                     var bestMatch = matches.OrderByDescending(m => m.score).First();
+
+                    _logger?.LogInformation($"Melhor match: {bestMatch.specialty} (score: {bestMatch.score})");
 
                     var confidence = bestMatch.score > 0.8 ? "Alta" :
                                    bestMatch.score > 0.5 ? "Média" : "Baixa";
@@ -122,6 +128,7 @@ namespace MedicalScheduling.API.Services
                 }
 
                 // Se não encontrou correspondências específicas, usar análise por palavras-chave
+                _logger?.LogInformation("Nenhum match específico encontrado, usando análise geral");
                 var generalAnalysis = AnalyzeGeneralSymptoms(symptomsLower);
 
                 return Task.FromResult(generalAnalysis);

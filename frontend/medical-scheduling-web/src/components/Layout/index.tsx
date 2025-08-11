@@ -13,10 +13,10 @@ interface LayoutProps {
   description?: string
 }
 
-const Layout: React.FC<LayoutProps> = ({ 
-  children, 
-  title = 'Medical Scheduling', 
-  description = 'Sistema de agendamento médico com triagem por IA' 
+const Layout: React.FC<LayoutProps> = ({
+  children,
+  title = 'Medical Scheduling',
+  description = 'Sistema de agendamento médico com triagem por IA'
 }) => {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -24,13 +24,15 @@ const Layout: React.FC<LayoutProps> = ({
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <LoadingSpinner size="large" />
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
       </div>
     )
   }
 
   if (!user) {
-    router.push('/login')
     return null
   }
 

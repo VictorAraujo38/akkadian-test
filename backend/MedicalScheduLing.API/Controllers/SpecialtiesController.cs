@@ -6,7 +6,6 @@ namespace MedicalScheduling.API.Controllers
 {
     [ApiController]
     [Route("specialties")]
-    [Authorize]
     public class SpecialtiesController : ControllerBase
     {
         private readonly IDoctorAssignmentService _doctorAssignmentService;
@@ -21,10 +20,12 @@ namespace MedicalScheduling.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous] 
         public async Task<IActionResult> GetAllSpecialties()
         {
             try
             {
+                _logger.LogInformation("Buscando todas as especialidades (público)");
                 var specialties = await _doctorAssignmentService.GetAllSpecialtiesAsync();
                 return Ok(specialties);
             }
@@ -36,6 +37,7 @@ namespace MedicalScheduling.API.Controllers
         }
 
         [HttpGet("with-doctors")]
+        [Authorize] 
         public async Task<IActionResult> GetSpecialtiesWithDoctors([FromQuery] DateTime? date = null)
         {
             try
@@ -73,6 +75,7 @@ namespace MedicalScheduling.API.Controllers
         }
 
         [HttpGet("{specialtyName}/doctors")]
+        [Authorize] 
         public async Task<IActionResult> GetDoctorsBySpecialty(
             string specialtyName,
             [FromQuery] DateTime? date = null)

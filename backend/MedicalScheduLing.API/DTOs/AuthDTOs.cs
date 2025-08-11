@@ -6,6 +6,9 @@ namespace MedicalScheduling.API.DTOs
         public string Password { get; set; }
         public string Name { get; set; }
         public string Role { get; set; } // "patient" or "doctor"
+
+        public string? CrmNumber { get; set; }
+        public string? Phone { get; set; }
     }
 
     public class LoginDto

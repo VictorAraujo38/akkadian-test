@@ -79,7 +79,7 @@ Responda APENAS com um JSON no formato:
         {
             var requestBody = new
             {
-                model = "gpt-3.5-turbo",
+                model = "gpt-5",
                 messages = new[]
                 {
                     new { role = "system", content = "Você é um assistente médico especializado em triagem. Sempre responda em JSON válido." },

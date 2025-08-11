@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/router'
-import { appointmentService } from '@/services/api'
+import { api, appointmentService } from '@/services/api'
 import { toast } from 'react-toastify'
 import { CalendarIcon, ClockIcon, DocumentTextIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import styles from './AppointmentForm.module.css'
@@ -22,6 +22,10 @@ export const AppointmentForm: React.FC = () => {
     const [availableSlots, setAvailableSlots] = useState<string[]>([])
     const [loadingSlots, setLoadingSlots] = useState(false)
     const [selectedDate, setSelectedDate] = useState('')
+    const [showDoctorSelection, setShowDoctorSelection] = useState(false)
+    const [availableDoctors, setAvailableDoctors] = useState<any[]>([])
+    const [selectedDoctorId, setSelectedDoctorId] = useState<number | null>(null)
+    const [appointmentCreationAttempted, setAppointmentCreationAttempted] = useState(false)
 
     const {
         register,
@@ -63,6 +67,33 @@ export const AppointmentForm: React.FC = () => {
         }
     }
 
+    const fetchAvailableDoctors = async (date: string, time: string) => {
+        try {
+            const appointmentDateTime = new Date(`${date}T${time}`)
+
+            // Buscar todas as especialidades e seus médicos
+            const specialtiesResponse = await api.get('/specialties/with-doctors', {
+                params: { date: appointmentDateTime.toISOString().split('T')[0] }
+            })
+
+            const doctors: any[] = []
+            specialtiesResponse.data.forEach((specialty: any) => {
+                specialty.Doctors.forEach((doctor: any) => {
+                    doctors.push({
+                        ...doctor,
+                        specialtyName: specialty.Name,
+                        specialtyDepartment: specialty.Department
+                    })
+                })
+            })
+
+            setAvailableDoctors(doctors)
+        } catch (error) {
+            console.error('Erro ao buscar médicos:', error)
+            setAvailableDoctors([])
+        }
+    }
+
     const onSubmit = async (data: AppointmentFormData) => {
         if (!selectedTime) {
             toast.error('Selecione um horário disponível')
@@ -70,14 +101,34 @@ export const AppointmentForm: React.FC = () => {
         }
 
         setLoading(true)
+        setAppointmentCreationAttempted(true)
+
         try {
             const appointmentDateTime = new Date(`${data.appointmentDate}T${selectedTime}`)
 
-            const response = await appointmentService.createAppointment({
+            const appointmentData: any = {
                 appointmentDate: appointmentDateTime.toISOString(),
                 symptoms: data.symptoms,
+                preferredSpecialty: triageResult?.recommendedSpecialty || "Clínica Geral",
                 additionalNotes: data.additionalNotes,
-            })
+            }
+
+            // Se um médico foi selecionado manualmente, adicionar ao payload
+            if (selectedDoctorId) {
+                appointmentData.preferredDoctorId = selectedDoctorId
+            }
+
+            const response = await appointmentService.createAppointment(appointmentData)
+
+            // Verificar se médico foi atribuído
+            if (!response.doctorName || response.doctorName === 'Nome não disponível') {
+                // Médico não foi atribuído automaticamente
+                await fetchAvailableDoctors(data.appointmentDate, selectedTime)
+                setShowDoctorSelection(true)
+
+                toast.warning('Nenhum médico da especialidade recomendada está disponível neste horário. Selecione um médico manualmente.')
+                return
+            }
 
             toast.success('Agendamento criado com sucesso!')
 
@@ -95,6 +146,42 @@ export const AppointmentForm: React.FC = () => {
             toast.error(errorMessage)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const confirmAppointmentWithSelectedDoctor = async () => {
+        if (!selectedDoctorId) {
+            toast.error('Selecione um médico')
+            return
+        }
+
+        const data = watch() // Pegar dados do formulário
+
+        setLoading(true)
+        try {
+            const appointmentDateTime = new Date(`${data.appointmentDate}T${selectedTime}`)
+
+            const response = await appointmentService.createAppointment({
+                appointmentDate: appointmentDateTime.toISOString(),
+                symptoms: data.symptoms,
+                preferredSpecialty: triageResult?.recommendedSpecialty || "Clínica Geral",
+                additionalNotes: data.additionalNotes,
+                preferredDoctorId: selectedDoctorId
+            })
+
+            toast.success('Agendamento criado com sucesso!')
+
+            if (response.doctorName) {
+                toast.info(`Médico atribuído: ${response.doctorName}`)
+            }
+
+            router.push('/patient/dashboard')
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || error.message || 'Erro ao criar agendamento'
+            toast.error(errorMessage)
+        } finally {
+            setLoading(false)
+            setShowDoctorSelection(false)
         }
     }
 
@@ -251,7 +338,7 @@ export const AppointmentForm: React.FC = () => {
                             className={styles.analyzeButton}
                             disabled={!symptoms || symptoms.length < 10}
                         >
-                            🤖 Analisar Sintomas com IA
+                            Analisar Sintomas com IA
                         </button>
 
                         {triageResult && (
@@ -290,6 +377,87 @@ export const AppointmentForm: React.FC = () => {
                         />
                     </div>
                 </div>
+
+                {showDoctorSelection && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+                            <h3 className="text-lg font-semibold mb-4">
+                                 Selecione um médico disponível
+                            </h3>
+
+                            <p className="text-gray-600 mb-4">
+                                Não encontramos um médico da especialidade recomendada ({triageResult?.recommendedSpecialty}) disponível neste horário.
+                                Selecione um dos médicos disponíveis abaixo:
+                            </p>
+
+                            <div className="space-y-3 mb-6">
+                                {availableDoctors.length === 0 ? (
+                                    <p className="text-center text-gray-500 py-8">
+                                        Nenhum médico disponível neste horário
+                                    </p>
+                                ) : (
+                                    availableDoctors.map((doctor) => (
+                                        <div
+                                            key={doctor.Id}
+                                            className={`border rounded-lg p-4 cursor-pointer transition-all ${selectedDoctorId === doctor.Id
+                                                    ? 'border-blue-500 bg-blue-50'
+                                                    : 'border-gray-200 hover:border-gray-300'
+                                                }`}
+                                            onClick={() => setSelectedDoctorId(doctor.Id)}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h4 className="font-medium text-gray-900">
+                                                        Dr(a). {doctor.Name}
+                                                    </h4>
+                                                    <p className="text-sm text-blue-600">
+                                                         {doctor.specialtyName}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">
+                                                         {doctor.specialtyDepartment}
+                                                    </p>
+                                                    {doctor.CrmNumber && (
+                                                        <p className="text-xs text-gray-400">
+                                                             {doctor.CrmNumber}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center">
+                                                    {selectedDoctorId === doctor.Id && (
+                                                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowDoctorSelection(false)
+                                        setSelectedDoctorId(null)
+                                    }}
+                                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={confirmAppointmentWithSelectedDoctor}
+                                    disabled={!selectedDoctorId || loading}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {loading ? <LoadingSpinner size="small" /> : ' Confirmar Agendamento'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className={styles.actions}>
                     <button

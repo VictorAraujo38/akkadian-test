@@ -4,7 +4,9 @@ namespace MedicalScheduling.API.DTOs
     {
         public DateTime AppointmentDate { get; set; }
         public string Symptoms { get; set; }
-        public string PreferredSpecialty { get; set; } // Opcional
+        public string? PreferredSpecialty { get; set; }
+
+        public int? PreferredDoctorId { get; set; }
     }
 
     public class AppointmentDto
@@ -32,7 +34,7 @@ namespace MedicalScheduling.API.DTOs
         public string RecommendedSpecialty { get; set; }
         public string Confidence { get; set; }
         public string Reasoning { get; set; }
-        public int? SpecialtyId { get; set; } 
+        public int? SpecialtyId { get; set; }
     }
 
     public class DoctorAssignmentDto

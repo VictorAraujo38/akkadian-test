@@ -37,6 +37,8 @@ namespace MedicalScheduling.API.Services
                 Password = hashedPassword,
                 Name = dto.Name,
                 Role = dto.Role.ToLower() == "doctor" ? UserRole.Doctor : UserRole.Patient,
+                CrmNumber = dto.Role.ToLower() == "doctor" ? dto.CrmNumber : null,
+                Phone = dto.Phone,
                 CreatedAt = DateTime.UtcNow
             };
 

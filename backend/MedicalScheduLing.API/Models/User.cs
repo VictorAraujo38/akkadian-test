@@ -8,7 +8,15 @@ namespace MedicalScheduling.API.Models
         public string Name { get; set; }
         public UserRole Role { get; set; }
         public DateTime CreatedAt { get; set; }
-        public List<Appointment> Appointments { get; set; }
+
+        public string? CrmNumber { get; set; }
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
+        public bool IsActive { get; set; } = true;
+
+        // Relacionamentos
+        public List<Appointment> Appointments { get; set; } = new List<Appointment>();
+        public List<DoctorSpecialty> DoctorSpecialties { get; set; } = new List<DoctorSpecialty>();
     }
 
     public enum UserRole

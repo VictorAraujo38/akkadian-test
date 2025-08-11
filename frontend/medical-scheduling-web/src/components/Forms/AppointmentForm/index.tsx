@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/router'
 import { appointmentService } from '@/services/api'
 import { toast } from 'react-toastify'
-import { CalendarIcon, ClockIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
+import { CalendarIcon, ClockIcon, DocumentTextIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import styles from './AppointmentForm.module.css'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 
@@ -14,30 +14,64 @@ type AppointmentFormData = {
     additionalNotes?: string
 }
 
-const timeSlots = [
-    '08:00', '09:00', '10:00', '11:00',
-    '14:00', '15:00', '16:00', '17:00'
-]
-
 export const AppointmentForm: React.FC = () => {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [selectedTime, setSelectedTime] = useState('')
-    const [triageResult, setTriageResult] = useState<string | null>(null)
+    const [triageResult, setTriageResult] = useState<any>(null)
+    const [availableSlots, setAvailableSlots] = useState<string[]>([])
+    const [loadingSlots, setLoadingSlots] = useState(false)
+    const [selectedDate, setSelectedDate] = useState('')
 
     const {
         register,
         handleSubmit,
         watch,
+        setValue,
         formState: { errors },
     } = useForm<AppointmentFormData>()
 
     const symptoms = watch('symptoms')
+    const appointmentDate = watch('appointmentDate')
+
+    // Buscar horários disponíveis quando a data muda
+    useEffect(() => {
+        if (appointmentDate) {
+            fetchAvailableSlots(appointmentDate)
+            setSelectedTime('') // Reset selected time
+            setValue('appointmentTime', '') // Reset form value
+        }
+    }, [appointmentDate, setValue])
+
+    const fetchAvailableSlots = async (date: string) => {
+        setLoadingSlots(true)
+        try {
+            const response = await appointmentService.getAvailableTimeSlots(date)
+            const slots = response.map((datetime: string) => {
+                const time = new Date(datetime).toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+                return time
+            })
+            setAvailableSlots(slots)
+        } catch (error) {
+            toast.error('Erro ao carregar horários disponíveis')
+            setAvailableSlots([])
+        } finally {
+            setLoadingSlots(false)
+        }
+    }
 
     const onSubmit = async (data: AppointmentFormData) => {
+        if (!selectedTime) {
+            toast.error('Selecione um horário disponível')
+            return
+        }
+
         setLoading(true)
         try {
-            const appointmentDateTime = new Date(`${data.appointmentDate}T${selectedTime || data.appointmentTime}`)
+            const appointmentDateTime = new Date(`${data.appointmentDate}T${selectedTime}`)
 
             const response = await appointmentService.createAppointment({
                 appointmentDate: appointmentDateTime.toISOString(),
@@ -46,9 +80,19 @@ export const AppointmentForm: React.FC = () => {
             })
 
             toast.success('Agendamento criado com sucesso!')
+
+            // Mostrar informações do agendamento
+            if (response.doctorName) {
+                toast.info(`Médico atribuído: ${response.doctorName}`)
+            }
+            if (response.recommendedSpecialty) {
+                toast.info(`Especialidade: ${response.recommendedSpecialty}`)
+            }
+
             router.push('/patient/dashboard')
         } catch (error: any) {
-            toast.error(error.message || 'Erro ao criar agendamento')
+            const errorMessage = error.response?.data?.message || error.message || 'Erro ao criar agendamento'
+            toast.error(errorMessage)
         } finally {
             setLoading(false)
         }
@@ -62,11 +106,22 @@ export const AppointmentForm: React.FC = () => {
 
         try {
             const response = await appointmentService.getTriageRecommendation(symptoms)
-            setTriageResult(response.recommendedSpecialty)
-            toast.success(`Especialidade recomendada: ${response.recommendedSpecialty}`)
+            setTriageResult(response)
+
+            let message = `Especialidade recomendada: ${response.recommendedSpecialty}`
+            if (response.confidence) {
+                message += ` (Confiança: ${response.confidence})`
+            }
+
+            toast.success(message)
         } catch (error) {
             toast.error('Erro ao analisar sintomas')
         }
+    }
+
+    const handleTimeSelection = (time: string) => {
+        setSelectedTime(time)
+        setValue('appointmentTime', time)
     }
 
     // Set minimum date to tomorrow
@@ -82,7 +137,10 @@ export const AppointmentForm: React.FC = () => {
     return (
         <div className={styles.container}>
             <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-                <h2 className={styles.title}>Novo Agendamento</h2>
+                <h2 className={styles.title}>
+                    <CalendarIcon className="h-6 w-6" />
+                    Novo Agendamento
+                </h2>
 
                 <div className={styles.section}>
                     <h3 className={styles.sectionTitle}>
@@ -103,29 +161,56 @@ export const AppointmentForm: React.FC = () => {
                             {errors.appointmentDate && (
                                 <span className={styles.error}>{errors.appointmentDate.message}</span>
                             )}
+                            <p className="text-sm text-gray-500 mt-1">
+                                Agendamentos de segunda a sexta-feira, com 2h de antecedência
+                            </p>
                         </div>
 
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Horário disponível</label>
-                            <div className={styles.timeSlots}>
-                                {timeSlots.map((time) => (
-                                    <button
-                                        key={time}
-                                        type="button"
-                                        onClick={() => setSelectedTime(time)}
-                                        className={`${styles.timeSlot} ${selectedTime === time ? styles.timeSlotSelected : ''
-                                            }`}
-                                    >
-                                        <ClockIcon className="h-4 w-4" />
-                                        {time}
-                                    </button>
-                                ))}
-                            </div>
+                            <label className={styles.label}>
+                                Horários disponíveis {appointmentDate && `(${new Date(appointmentDate).toLocaleDateString('pt-BR')})`}
+                            </label>
+
+                            {!appointmentDate && (
+                                <div className="text-gray-500 text-sm p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                                    Selecione uma data para ver os horários disponíveis
+                                </div>
+                            )}
+
+                            {appointmentDate && loadingSlots && (
+                                <div className="flex justify-center p-4">
+                                    <LoadingSpinner size="small" />
+                                </div>
+                            )}
+
+                            {appointmentDate && !loadingSlots && (
+                                <div className={styles.timeSlots}>
+                                    {availableSlots.length === 0 ? (
+                                        <div className="col-span-full text-center p-4 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                                            <ExclamationTriangleIcon className="h-6 w-6 mx-auto mb-2" />
+                                            Não há horários disponíveis para esta data
+                                        </div>
+                                    ) : (
+                                        availableSlots.map((time) => (
+                                            <button
+                                                key={time}
+                                                type="button"
+                                                onClick={() => handleTimeSelection(time)}
+                                                className={`${styles.timeSlot} ${selectedTime === time ? styles.timeSlotSelected : ''}`}
+                                            >
+                                                <ClockIcon className="h-4 w-4" />
+                                                {time}
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            )}
+
                             <input
                                 type="hidden"
                                 {...register('appointmentTime', {
                                     required: 'Horário é obrigatório',
-                                    validate: () => selectedTime !== '' || 'Selecione um horário'
+                                    validate: () => selectedTime !== '' || 'Selecione um horário disponível'
                                 })}
                                 value={selectedTime}
                             />
@@ -154,7 +239,7 @@ export const AppointmentForm: React.FC = () => {
                             })}
                             rows={4}
                             className={styles.textarea}
-                            placeholder="Ex: Dor de cabeça frequente, febre há 2 dias, dor no peito ao respirar..."
+                            placeholder="Ex: Dor de cabeça frequente há 3 dias, acompanhada de náusea e sensibilidade à luz..."
                         />
                         {errors.symptoms && (
                             <span className={styles.error}>{errors.symptoms.message}</span>
@@ -166,12 +251,31 @@ export const AppointmentForm: React.FC = () => {
                             className={styles.analyzeButton}
                             disabled={!symptoms || symptoms.length < 10}
                         >
-                            Analisar Sintomas com IA
+                            🤖 Analisar Sintomas com IA
                         </button>
 
                         {triageResult && (
                             <div className={styles.triageResult}>
-                                <strong>Especialidade Recomendada:</strong> {triageResult}
+                                <div className="flex items-start gap-2">
+                                    <div className="flex-shrink-0">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">
+                                            Especialidade Recomendada: {triageResult.recommendedSpecialty}
+                                        </p>
+                                        {triageResult.confidence && (
+                                            <p className="text-sm">
+                                                Confiança: {triageResult.confidence}
+                                            </p>
+                                        )}
+                                        {triageResult.reasoning && (
+                                            <p className="text-sm mt-1">
+                                                {triageResult.reasoning}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -182,7 +286,7 @@ export const AppointmentForm: React.FC = () => {
                             {...register('additionalNotes')}
                             rows={3}
                             className={styles.textarea}
-                            placeholder="Informações adicionais que possam ser relevantes..."
+                            placeholder="Medicamentos em uso, alergias, informações relevantes..."
                         />
                     </div>
                 </div>
@@ -197,7 +301,7 @@ export const AppointmentForm: React.FC = () => {
                     </button>
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !selectedTime}
                         className={styles.submitButton}
                     >
                         {loading ? <LoadingSpinner size="small" /> : 'Confirmar Agendamento'}

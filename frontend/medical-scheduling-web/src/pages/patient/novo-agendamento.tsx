@@ -29,7 +29,7 @@ function NovoAgendamento() {
       })
       
       toast.success('Agendamento criado com sucesso!')
-      router.push('/paciente/dashboard')
+      router.push('/patient/dashboard')
     } catch (error: unknown) {
       let errorMessage = 'Erro ao criar agendamento'
       if (error instanceof Error) {
@@ -50,7 +50,7 @@ function NovoAgendamento() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <button
-            onClick={() => router.push('/paciente/dashboard')}
+            onClick={() => router.push('/patient/dashboard')}
             className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
           >
             <ArrowLeftIcon className="h-4 w-4 mr-2" />

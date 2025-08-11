@@ -200,9 +200,9 @@ npm run test:ci  # Executa testes uma única vez (CI)
 |--------|------|-----------|--------------|
 | POST | `/auth/register` | Registro de usuário | Não |
 | POST | `/auth/login` | Login | Não |
-| POST | `/paciente/agendamentos` | Criar agendamento | Paciente |
-| GET | `/paciente/agendamentos` | Listar agendamentos | Paciente |
-| GET | `/medico/agendamentos?data=` | Agendamentos por data | Médico |
+| POST | `/patient/agendamentos` | Criar agendamento | Paciente |
+| GET | `/patient/agendamentos` | Listar agendamentos | Paciente |
+| GET | `/doctor/agendamentos?data=` | Agendamentos por data | Médico |
 | POST | `/mock/triagem` | Simular triagem IA | Não |
 
 ## 🏗️ Arquitetura

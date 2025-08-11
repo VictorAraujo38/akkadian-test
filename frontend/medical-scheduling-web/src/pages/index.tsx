@@ -13,9 +13,9 @@ export default function Home() {
             if (!user) {
                 router.push('/login')
             } else if (user.role === 'Patient') {
-                router.push('/paciente/dashboard')
+                router.push('/patient/dashboard')
             } else if (user.role === 'Doctor') {
-                router.push('/medico/dashboard')
+                router.push('/doctor/dashboard')
             }
         }
     }, [user, loading, router])

@@ -1,10 +1,5 @@
 /// <reference types="next" />
 /// <reference types="next/image-types/global" />
 
-// postcss.config.js
-module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-}
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/basic-features/typescript for more information.

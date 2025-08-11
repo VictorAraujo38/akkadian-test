@@ -6,7 +6,7 @@ services:
     container_name: medical_scheduling_db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Un1maq!@#
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: medical_scheduling
     ports:
       - "5432:5432"

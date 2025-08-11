@@ -38,8 +38,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (token) {
         api.defaults.headers.Authorization = `Bearer ${token}`
         try {
-          // Aqui você pode fazer uma chamada para obter os dados do usuário
-          // Por enquanto, vamos usar os dados do token decodificado
+
           const userData = JSON.parse(atob(token.split('.')[1]))
           setUser({
             id: userData.nameid,

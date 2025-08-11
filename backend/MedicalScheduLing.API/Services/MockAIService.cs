@@ -4,6 +4,13 @@ namespace MedicalScheduling.API.Services
 {
     public class MockAIService : IAIService
     {
+
+        private readonly HttpClient _httpClient;
+
+        public MockAIService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
         private readonly Dictionary<string, string> _symptomSpecialtyMap = new()
         {
             { "dor de cabeça", "Neurologia" },
@@ -21,7 +28,7 @@ namespace MedicalScheduling.API.Services
         public Task<TriageResponseDto> GetSpecialtyRecommendationAsync(string symptoms)
         {
             var symptomsLower = symptoms.ToLower();
-            
+
             foreach (var kvp in _symptomSpecialtyMap)
             {
                 if (symptomsLower.Contains(kvp.Key))

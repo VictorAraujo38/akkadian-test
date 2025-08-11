@@ -19,9 +19,9 @@ export const Navbar: React.FC = () => {
 
   const navigateToDashboard = () => {
     if (user?.role === 'Patient') {
-      router.push('/paciente/dashboard')
+      router.push('/patient/dashboard')
     } else if (user?.role === 'Doctor') {
-      router.push('/medico/dashboard')
+      router.push('/doctor/dashboard')
     }
   }
 

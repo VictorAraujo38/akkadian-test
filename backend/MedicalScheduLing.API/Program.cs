@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MedicalScheduling.API.Data;
 using MedicalScheduling.API.Services;
+using MedicalScheduling.API.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,5 +73,49 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dbContext.Database.Migrate();
 }
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    try
+    {
+        // Aplicar migrations automaticamente
+        dbContext.Database.Migrate();
+
+        // Criar usuários padrão se não existirem
+        if (!dbContext.Users.Any())
+        {
+            var users = new[]
+            {
+                new User
+                {
+                    Email = "medico@example.com",
+                    Password = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=", // Senha@123
+                    Name = "Dr. João Silva",
+                    Role = UserRole.Doctor,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new User
+                {
+                    Email = "paciente@example.com",
+                    Password = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=", // Senha@123
+                    Name = "Maria Santos",
+                    Role = UserRole.Patient,
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+
+            dbContext.Users.AddRange(users);
+            dbContext.SaveChanges();
+        }
+    }
+    catch (Exception ex)
+    {
+        // Log do erro mas não quebra a aplicação
+        Console.WriteLine($"Migration error: {ex.Message}");
+    }
+}
+
 
 app.Run();

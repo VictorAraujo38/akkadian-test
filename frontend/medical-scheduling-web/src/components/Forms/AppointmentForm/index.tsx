@@ -46,7 +46,7 @@ export const AppointmentForm: React.FC = () => {
             })
 
             toast.success('Agendamento criado com sucesso!')
-            router.push('/paciente/dashboard')
+            router.push('/patient/dashboard')
         } catch (error: any) {
             toast.error(error.message || 'Erro ao criar agendamento')
         } finally {
